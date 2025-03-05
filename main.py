@@ -5,6 +5,8 @@ from ultralytics import YOLO
 import supervision as sv
 
 from detection_helpers import piece_detections, corner_keypoints
+from board_helpers import draw_board, draw_points_on_board, BOARD_POINTS
+from PerspectiveTransformer import PerspectiveTransformer
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="argeparse_desc")
@@ -12,7 +14,7 @@ def parse_arguments() -> argparse.Namespace:
 
     args = parser.parse_args()
     return args
-    
+
 
 def main():
     args = parse_arguments()
@@ -24,17 +26,35 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
     
     while True:
-        # ret, frame = cap.read()
-        frame = cv2.imread("board.jpg")
-            
+        ret, frame = cap.read()
+        # frame = cv2.imread("board.jpg")
+        
         detections = piece_detections(frame, annotate=True)
         keypoints = corner_keypoints(frame, annotate=True)
+        
+        if keypoints is not None:
+            
+            transformer = PerspectiveTransformer(
+                source=keypoints,  # dim is (1, 8, 2)
+                target=BOARD_POINTS
+            )
+            
+            frame_pieces_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
+            board_pieces_xy = transformer.transform_points(points=frame_pieces_xy)
+                            
+            board = draw_board()
+            board = draw_points_on_board(
+                board=board,
+                xy=board_pieces_xy,
+                py=-10
+            )
+            cv2.imshow("board", board)
         
         cv2.imshow("frame", frame)
         # print(type(frame))
         # break
         
-        if cv2.waitKey(30) == 27:
+        if cv2.waitKey(20) == 27:
             break
 
 

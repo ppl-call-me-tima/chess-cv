@@ -59,6 +59,9 @@ def corner_keypoints(frame: np.ndarray, annotate=False) -> sv.KeyPoints:
     corner_result = corner_detection_model(frame)[0]
     keypoints = sv.KeyPoints.from_ultralytics(corner_result)
     
+    if keypoints.confidence is None:
+        return None
+    
     if annotate:
     
         vertex_annotator = sv.VertexAnnotator(
@@ -66,11 +69,10 @@ def corner_keypoints(frame: np.ndarray, annotate=False) -> sv.KeyPoints:
             radius=3
         )
         
-        if keypoints.confidence is not None:
-            filter = keypoints.confidence[0] > 0.5
-            frame_reference_points = keypoints.xy[0][filter]
-            frame_reference_keypoints = sv.KeyPoints(xy=frame_reference_points[np.newaxis, ...])
-            
-            frame = vertex_annotator.annotate(scene=frame, key_points=frame_reference_keypoints)
+        filter = keypoints.confidence[0] > 0.5
+        frame_reference_points = keypoints.xy[0][filter]
+        frame_reference_keypoints = sv.KeyPoints(xy=frame_reference_points[np.newaxis, ...])
+        
+        frame = vertex_annotator.annotate(scene=frame, key_points=frame_reference_keypoints)
     
-    return keypoints
+    return frame_reference_points

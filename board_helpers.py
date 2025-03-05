@@ -1,6 +1,18 @@
 import cv2
 import numpy as np
 
+BOARD_POINTS = np.array([
+    (0, 0),
+    (0, 800),
+    (800, 800),
+    (800, 0),
+
+    (100, 100),
+    (100, 700),
+    (700, 700),
+    (700, 100),
+])
+
 def draw_board():
     board_size = 8
     square_size = 100
@@ -24,4 +36,30 @@ def draw_board():
             
             cv2.rectangle(board, top_left, bottom_right, color, -1)
     
+    return board
+
+
+def draw_points_on_board(
+    board: np.ndarray,
+    xy: np.ndarray,
+    px: int = 0,
+    py: int = 0,
+    scale: float = 1,
+) -> np.ndarray:
+
+    for i in range(len(xy)):
+
+        point = xy[i]
+
+        x = int(point[0] * scale) + px
+        y = int(point[1] * scale) + py
+
+        cv2.circle(
+            board,
+            (x,y),
+            radius=2,
+            color=(0,0,255),
+            thickness=-1
+        )
+
     return board
