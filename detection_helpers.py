@@ -3,19 +3,22 @@ from ultralytics import YOLO
 import numpy as np
 import supervision as sv
 
-def piece_detections(frame: np.ndarray, annotate=False) -> sv.Detections:
+def piece_detections(
+    model: YOLO, 
+    frame: np.ndarray, 
+    annotate=False
+) -> sv.Detections:
     """
     Returns the `sv.Detections` for pieces.
     
     Attributes:
+        model (ultralytics.YOLO): The model object to make inferences.
         frame (np.ndarray): The image from which the detections has to be made.
         annotate (bool): Annotates bounding boxes and labels onto the frame in-place.
     """
     
-    # detections
-    piece_detection_model = YOLO("models/piece_detection_best.pt")
-    
-    piece_result = piece_detection_model(frame)[0]
+    # detections  
+    piece_result = model(frame)[0]
     
     piece_detections = sv.Detections.from_ultralytics(piece_result)
     piece_detections = piece_detections.with_nms(threshold=0.5, class_agnostic=True)
@@ -45,18 +48,20 @@ def piece_detections(frame: np.ndarray, annotate=False) -> sv.Detections:
     return piece_detections
     
 
-def corner_keypoints(frame: np.ndarray, annotate=False) -> sv.KeyPoints:
+def corner_keypoints(
+    model: YOLO, 
+    frame: np.ndarray, 
+    annotate=False
+) -> sv.KeyPoints:
     """
     Returns the `sv.KeyPoints` for corners.
     
     Attributes:
         frame (np.ndarray): The image from which the detections has to be made.
         annotate (bool): Annotates keypoints onto the frame in-place.
-    """    
+    """
     
-    corner_detection_model = YOLO("models/corner_detection_best.pt")
-    
-    corner_result = corner_detection_model(frame)[0]
+    corner_result = model(frame)[0]
     keypoints = sv.KeyPoints.from_ultralytics(corner_result)
     
     if keypoints.confidence is None:

@@ -25,12 +25,23 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
     
+    piece_detection_model = YOLO("models/piece_detection_best.pt")
+    corner_detection_model = YOLO("models/corner_detection_best.pt")
+    
     while True:
         ret, frame = cap.read()
         # frame = cv2.imread("board.jpg")
         
-        detections = piece_detections(frame, annotate=True)
-        keypoints = corner_keypoints(frame, annotate=True)
+        detections = piece_detections(
+            model=piece_detection_model, 
+            frame=frame, 
+            annotate=True
+        )
+        keypoints = corner_keypoints(
+            model=corner_detection_model, 
+            frame=frame, 
+            annotate=True
+        )
         
         if keypoints is not None:
             
@@ -51,7 +62,6 @@ def main():
             cv2.imshow("board", board)
         
         cv2.imshow("frame", frame)
-        # print(type(frame))
         # break
         
         if cv2.waitKey(20) == 27:
