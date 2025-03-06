@@ -4,7 +4,9 @@ import argparse
 from ultralytics import YOLO
 
 from helpers.detection_helpers import piece_detections, corner_keypoints
-from helpers.board_helpers import generate_board
+from helpers.board_helpers import draw_board, generate_board
+from helpers.FEN_helpers import FEN
+
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="argeparse_desc")
@@ -43,12 +45,15 @@ def main():
         
         if keypoints is not None:
             
-            board = generate_board(detections, keypoints)
-            cv2.imshow("board", board)
+            board = draw_board()
+            xy = generate_board(board, detections, keypoints, show=False)
         
         cv2.imshow("frame", frame)
-        # break
         
+        fen = FEN(pitch_pieces_xy=xy, detections=detections)
+        fen.rotate_anticlockwise()
+        print(fen.fen())
+
         if cv2.waitKey(20) == 27:
             break
 

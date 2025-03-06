@@ -68,7 +68,7 @@ def draw_points_on_board(
     return board
 
 
-def generate_board(detections: sv.Detections, keypoints: sv.KeyPoints):
+def generate_board(board: np.ndarray[np.float32], detections: sv.Detections, keypoints: sv.KeyPoints, show=False):
     
     transformer = PerspectiveTransformer(
         source=keypoints,
@@ -78,11 +78,13 @@ def generate_board(detections: sv.Detections, keypoints: sv.KeyPoints):
     frame_pieces_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
     board_pieces_xy = transformer.transform_points(points=frame_pieces_xy)
                     
-    board = draw_board()
     board = draw_points_on_board(
         board=board,
         xy=board_pieces_xy,
         py=-10
     )
     
-    return board
+    if show:
+        cv2.imshow("board", board)
+    
+    return board_pieces_xy
