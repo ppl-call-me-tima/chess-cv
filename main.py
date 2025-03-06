@@ -46,7 +46,7 @@ def main():
         if keypoints is not None:
             
             transformer = PerspectiveTransformer(
-                source=keypoints,  # dim is (1, 8, 2)
+                source=keypoints,
                 target=BOARD_POINTS
             )
             
