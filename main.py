@@ -2,11 +2,9 @@ import cv2
 import argparse
 
 from ultralytics import YOLO
-import supervision as sv
 
-from detection_helpers import piece_detections, corner_keypoints
-from board_helpers import draw_board, draw_points_on_board, BOARD_POINTS
-from PerspectiveTransformer import PerspectiveTransformer
+from helpers.detection_helpers import piece_detections, corner_keypoints
+from helpers.board_helpers import generate_board
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="argeparse_desc")
@@ -29,8 +27,8 @@ def main():
     corner_detection_model = YOLO("models/corner_detection_best.pt")
     
     while True:
-        ret, frame = cap.read()
-        # frame = cv2.imread("board.jpg")
+        # ret, frame = cap.read()
+        frame = cv2.imread("board.jpg")
         
         detections = piece_detections(
             model=piece_detection_model, 
@@ -45,20 +43,7 @@ def main():
         
         if keypoints is not None:
             
-            transformer = PerspectiveTransformer(
-                source=keypoints,
-                target=BOARD_POINTS
-            )
-            
-            frame_pieces_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
-            board_pieces_xy = transformer.transform_points(points=frame_pieces_xy)
-                            
-            board = draw_board()
-            board = draw_points_on_board(
-                board=board,
-                xy=board_pieces_xy,
-                py=-10
-            )
+            board = generate_board(detections, keypoints)
             cv2.imshow("board", board)
         
         cv2.imshow("frame", frame)

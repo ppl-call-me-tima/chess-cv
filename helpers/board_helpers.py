@@ -1,5 +1,8 @@
 import cv2
 import numpy as np
+import supervision as sv
+
+from PerspectiveTransformer import PerspectiveTransformer
 
 BOARD_POINTS = np.array([
     (0, 0),
@@ -62,4 +65,24 @@ def draw_points_on_board(
             thickness=-1
         )
 
+    return board
+
+
+def generate_board(detections: sv.Detections, keypoints: sv.KeyPoints):
+    
+    transformer = PerspectiveTransformer(
+        source=keypoints,
+        target=BOARD_POINTS
+    )
+
+    frame_pieces_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER)
+    board_pieces_xy = transformer.transform_points(points=frame_pieces_xy)
+                    
+    board = draw_board()
+    board = draw_points_on_board(
+        board=board,
+        xy=board_pieces_xy,
+        py=-10
+    )
+    
     return board
