@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 from helpers.detection_helpers import piece_detections, corner_keypoints
 from helpers.board_helpers import draw_board, generate_board
-from helpers.FEN_helpers import FEN
+from helpers.chessboard_helpers import Chessboard
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -14,6 +14,7 @@ def parse_arguments() -> argparse.Namespace:
 
     args = parser.parse_args()
     return args
+
 
 
 def main():
@@ -50,9 +51,12 @@ def main():
         
         cv2.imshow("frame", frame)
         
-        fen = FEN(pitch_pieces_xy=xy, detections=detections)
-        fen.rotate_anticlockwise()
-        print(fen.fen())
+        chessboard = Chessboard(board_pieces_xy=xy, detections=detections)
+        chessboard.rotate_anticlockwise()
+        
+        final = chessboard.chessboard()
+
+        cv2.imshow("chessboard", final)
 
         if cv2.waitKey(20) == 27:
             break

@@ -1,17 +1,31 @@
 import numpy as np
 import supervision as sv
 
-class FEN:
+import cv2
+import os
+
+import chess
+import chess.svg
+
+os.environ['PATH'] = r'C:\Program Files\GTK3-RuntimeWin64\bin' + os.pathsep + os.environ['PATH']
+
+import cairosvg
+import io
+from PIL import Image
+import numpy as np
+
+class Chessboard:
+    # TODO: add descriptions of everything!
+    
     def __init__(
         self, 
-        pitch_pieces_xy: np.ndarray[np.float32], 
+        board_pieces_xy: np.ndarray[np.float32], 
         detections: sv.Detections
-    ):
-        
+    ):        
         # coordinate-piece dict. initialization
         self.class_at_point = {}
         for i in range(len(detections.xyxy)):
-            self.class_at_point[tuple(pitch_pieces_xy[i])] = detections.data["class_name"][i]
+            self.class_at_point[tuple(board_pieces_xy[i])] = detections.data["class_name"][i]
 
         # matrix initiailization
         self.matrix = []
@@ -29,12 +43,11 @@ class FEN:
 
                 piece_found = False
 
-                for xy in pitch_pieces_xy:
+                for xy in board_pieces_xy:
                     piece_x = xy[1]
                     piece_y = xy[0]
 
                     if piece_x >= lx and piece_x <= rx and piece_y >= ly and piece_y <= ry:
-                        # print(lx, ly, " : ", rx, ry, " : ", class_at_point[tuple(xy)])
                         row.append(self.class_at_point[tuple(xy)])
                         piece_found = True
                         break
@@ -70,7 +83,7 @@ class FEN:
 
         return symbol
 
-    def fen(self):
+    def FEN(self):
         fen = ""
 
         for row in self.matrix:
@@ -91,3 +104,12 @@ class FEN:
 
         fen = fen[:-1]
         return fen
+
+    def chessboard(self) -> np.ndarray:
+        chessboard = chess.Board(fen=self.FEN())
+        svg_string = chess.svg.board(chessboard)
+        
+        png_data = cairosvg.svg2png(bytestring=svg_string)
+        img_pil = Image.open(io.BytesIO(png_data))
+        img_np = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+        return img_np
